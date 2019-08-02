@@ -1,0 +1,126 @@
+Shadowsocks
+-----------
+
+---
+
+* По всем вопросам обарщаемся к Петру Зеленину:
+    * E-mail: [po.zelenin@gmail.com](mailto:po.zelenin@gmail.com)
+    * Telegram: [@Petrikoz](https://telegram.org)
+
+---
+
+* Платформы
+    * [Windows](#windows)
+    * [macOS](#macos)
+    * [Linux](#linux)
+    * [Android](#android)
+    * [iOS](#ios)
+
+<a name="windows"></a>
+### Windows
+1. Качаем [Shadowsocks для Windows](https://github.com/shadowsocks/shadowsocks-windows/releases).
+1. Распаковываем архив и запускаем (двойной клик) файл Shadowsocks.exe.
+1. Убедитесь, что QR-код отцентрован и полностью виден на экране.
+   Правой клавишей кликните по иконке Shadowsocks в системном трее (правый нижний угол экрана),
+   перейдите в раздел *Servers* > *Scan QRCode from Screen...*
+
+   ![Shadowsocks QR code](./shadowsocks-qr-code.png)
+1. Также вы можете перейти в раздел *Servers* > *New server* и вручную закончить настройку по следующим шагам:
+1. Введите `{{ ansible_default_ipv4.address }}` в поле *Server IP*.
+   1. Введите `{{ shadowsocks_conf.server_port }}` в поле *Server Port*.
+   1. Введите `{{ shadowsocks_password }}` в поле *Password*.
+   1. В поле *SOCKS 5 Proxy Port* должно быть `{{ shadowsocks_conf.local_port }}` и в поле *Encryption Method* должно быть `{{ shadowsocks_conf.method }}`.
+   1. Кликните *Save*.
+1. Кликните по иконке Shadowsocks в системном трее (правый нижний угол экрана) и выберите *Enable*.
+1. Это всё! Теперь вы можете проверить, что ваш трафик идёт через удалённый сервер,
+   проверив свой внешний IP на [DuckDuckGo](https://duckduckgo.com/?q=ip+address).
+   Под поисковой строкой вы должны увидеть *Your public IP address is {{ ansible_default_ipv4.address }}*.
+
+<a name="macos"></a>
+### macOS
+1. Качаем [ShadowsocksX-NG](https://github.com/shadowsocks/ShadowsocksX-NG/releases).
+1. Двойной клик на архив, и распаковываем приложение в ваш каталог Applications.
+1. Запустите ShadowsocksX-NG. Вы увидите запрос пользовательского пароля: он нужен для изменения системных настроек proxy.
+1. Найдите иконку Shadowsocks в вашей панели меню и кликните по ней.
+1. Убедитесь, что QR-код отцентрован и полностью виден на экране, и выберите *Scan QR Code from Screen...*
+
+   ![Shadowsocks QR code](./shadowsocks-qr-code.png)
+1. Также вы можете перейти в раздел *Servers*, выбрать *Open Server Preferences...*, и кликнуть кнопку *+* сбоку:
+   1. Введите `{{ ansible_default_ipv4.address }}` и `{{ shadowsocks_conf.server_port }}` в поля *Address*.
+   1. Убедитесь, что `{{ shadowsocks_conf.method }}` выбрано в поле *Encryption*.
+   1. Введите `{{ shadowsocks_password }}` в поле *Password*.
+   1. Кликните *OK*.
+1. Кликните иконку Shadowsocks в вашей панели меню снова и выберите *Global Mode*.
+1. Вы можете использовать иконку Shadowsocks для включения/выключения VPN.
+   Цвет иконки будет сигнализировать о состоянии VPN: включено или нет.
+1. Это всё! Теперь вы можете проверить, что ваш трафик идёт через удалённый сервер,
+   проверив свой внешний IP на [DuckDuckGo](https://duckduckgo.com/?q=ip+address).
+   Под поисковой строкой вы должны увидеть *Your public IP address is {{ ansible_default_ipv4.address }}*.
+
+<a name="linux"></a>
+### Linux
+
+Установите клиент Shadowsocks с помощью пакетного менеджера своей системы (примеры будут для Ubuntu):
+
+    sudo apt install shadowsocks-libev
+
+Создайте конфигурационный файл *~/.shadowsocks.config.json* со следующим содержимым:
+
+    {
+      "server": "{{ ansible_default_ipv4.address }}",
+      "server_port": {{ shadowsocks_conf.server_port }},
+      "local_port": {{ shadowsocks_conf.local_port }},
+      "password": "{{ shadowsocks_password }}",
+      "timeout": {{ shadowsocks_conf.timeout }},
+      "method": "{{ shadowsocks_conf.method }}"
+    }
+
+Запустите локальный SOCKS proxy, выполнив в терминале:
+
+    ss-local -v -c ~/.shadowsocks.config.json
+
+Проверить подключение через прокси вы можете с помощью *curl*:
+
+    curl -I --socks5 localhost:1080 google.com
+
+Ответ должен быть *301 Found*, а **не** *connection refused error*.
+
+После запуска Shadowsocks локально, вам необходимо настроить SOCKS proxy в нужных программах: Telegram, браузер и др.
+
+<a name="android"></a>
+### Android
+1. Качаем Shadowsocks for Android из [Google Play](https://play.google.com/store/apps/details?id=com.github.shadowsocks)
+   или с [GitHub](https://github.com/shadowsocks/shadowsocks-android/releases).
+1. Запускаем приложение.
+1. Тапаем по Add Profile *+* иконке: вторая справа вверху экрана.
+1. Выбираем *Scan QR code*.
+1. Сканируем QR-код:
+
+   ![Shadowsocks QR code](./shadowsocks-qr-code.png)
+1. Кликните на значок зачёркнутого самолётика.
+1. Согласитесь с предупреждением Android о подключении к VPN.
+1. Это всё! Теперь вы можете проверить, что ваш трафик идёт через удалённый сервер,
+   проверив свой внешний IP на [DuckDuckGo](https://duckduckgo.com/?q=ip+address).
+   Под поисковой строкой вы должны увидеть *Your public IP address is {{ ansible_default_ipv4.address }}*.
+1. **Внимание!**
+   При этих настройках весь ваш трафик будет направлен через VPN, что может оказаться медленным вариантом и съест трафик на выходном сервере.
+   Можете в настройках подключения, в Shadowsocks, настроить, чтобы VPN работал только для определённых приложений: Telegram, например.
+
+<a name="ios"></a>
+### iOS
+
+1. Качаем [Shadowrocket](https://itunes.apple.com/us/app/shadowrocket/id932747118?mt=8) и запускаем его.
+1. Тапните по иконке импорта QR-кода слева вверху экрана.
+1. Сканируем QR-код:
+
+   ![Shadowsocks QR code](./shadowsocks-qr-code.png)
+1. Переключите переключатель соединения, расположенный справа от текста *Not Connected* на вкладке *Home*.
+   * Если это ваш первый запуск Shadowrocket, iOS спросит вас о разрешении приложению добавить VPN-подключение.
+     Тапните *Allow* и следуйте инструкциям на экране.
+1. Это всё! Теперь вы можете проверить, что ваш трафик идёт через удалённый сервер,
+   проверив свой внешний IP на [DuckDuckGo](https://duckduckgo.com/?q=ip+address).
+   Под поисковой строкой вы должны увидеть *Your public IP address is {{ ansible_default_ipv4.address }}*.
+1. **Внимание!**
+   При этих настройках весь ваш трафик будет направлен через VPN, что может оказаться медленным вариантом и съест трафик на выходном сервере.
+   Лучше настроить работу только для отдельных приложений: Telegram, например.
+   Для этого сомтрите возможности приложения Shadowrocket.

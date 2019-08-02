@@ -1,0 +1,37 @@
+---
+- name: Generate a random password
+  shell: 'openssl rand -base64 10 > {{ nginx_file_password }}'
+  args:
+    creates: '{{ nginx_file_password }}'
+  when: nginx_auth_pass is undefined
+
+- name: Set permissions on password file
+  file:
+    path: '{{ nginx_file_password }}'
+    owner: root
+    group: root
+    mode: 0600
+  when: nginx_auth_pass is undefined
+
+- name: Register password
+  command: 'cat {{ nginx_file_password }}'
+  register: nginx_password
+  changed_when: no
+  when: nginx_auth_pass is undefined
+
+- name: Set nginx_password
+  set_fact: nginx_auth_pass=nginx_password.stdout
+  when: nginx_auth_pass is undefined
+
+- name: Generate the htpasswd file
+  shell: 'htpasswd -b -c {{ nginx_file_htpasswd }} {{ nginx_auth_user }} {{ nginx_auth_pass }}'
+  args:
+    creates: '{{ nginx_file_htpasswd }}'
+
+- name: Add default vhost
+  template:
+    src: default.conf.j2
+    dest: '{{ nginx_path_vhost }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+  notify: restart nginx

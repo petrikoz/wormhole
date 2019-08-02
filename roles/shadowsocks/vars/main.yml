@@ -1,0 +1,25 @@
+---
+shadowsocks_conf:
+  local_port: 1080
+  method: chacha20-ietf-poly1305
+  server_port: 8530
+  tcp_fast_open: 'true'
+  timeout: 600
+
+shadowsocks_domain: 'ss.{{ dnsmasq_custom_domain|default(common_hostname) }}'
+
+shadowsocks_file_docs: shadowsocks-docs.md
+shadowsocks_file_password: '{{ shadowsocks_path }}/password.txt'
+
+shadowsocks_packages:
+  - shadowsocks-libev
+  # Used for documentation generation
+  - markdown
+  # Used to generate convenient QR codes for mobile clients
+  - qrencode
+
+shadowsocks_path: /etc/shadowsocks-libev
+shadowsocks_path_docs: '{{ nginx_path_webroot }}/src'
+shadowsocks_path_systemd: /etc/systemd/system/shadowsocks-libev.service.d
+
+shadowsocks_qr_code: '{{ nginx_path_webroot }}/shadowsocks-qr-code.png'

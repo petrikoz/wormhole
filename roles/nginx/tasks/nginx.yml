@@ -1,0 +1,56 @@
+---
+- name: Add PPA
+  apt_repository:
+    repo: ppa:nginx/stable
+    state: present
+    update_cache: yes
+  register: nginx_ppa_added
+
+- name: Ensure package will reinstall if the PPA was just added
+  apt:
+    name: nginx
+    state: absent
+  when: nginx_ppa_added.changed
+
+- name: Install packages
+  apt:
+    name: '{{ nginx_packages }}'
+
+- name: Remove official config
+  file:
+    path: '{{ nginx_path }}'
+    state: absent
+
+- name: Get our config
+  git:
+    repo: https://github.com/petrikoz/nginx-boilerplate.git
+    dest: '{{ nginx_path }}'
+
+- name: Create required directories
+  file:
+    path: '{{ item }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+    state: directory
+  with_items:
+    - '{{ nginx_path_auth }}'
+    - '{{ nginx_path_webroot }}'
+
+- name: Ensure config is right owner
+  file:
+    path: '{{ item }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+    recurse : yes
+  with_items:
+    - '{{ nginx_path }}'
+    - '{{ nginx_path_webroot }}'
+  notify: restart nginx
+
+- name: Ensure service is started and enabled to start at boot
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- import_tasks: auth.yml

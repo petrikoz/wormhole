@@ -1,0 +1,55 @@
+---
+- name: Ensure docs path exists
+  file:
+    path: '{{ shadowsocks_path_docs }}'
+    state: directory
+
+- name: Copy required CSS
+  copy:
+    src: solarized-light.min.css
+    dest: '{{ nginx_path_webroot }}'
+
+- name: Copy required HTML
+  copy:
+    src: '{{ item }}'
+    dest: '{{ shadowsocks_path_docs }}/{{ item }}'
+  with_items:
+    - footer.html
+    - header.html
+
+- name: Generate Markdown page
+  template:
+    src: docs.md.j2
+    dest: '{{ shadowsocks_path_docs }}/{{ shadowsocks_file_docs }}'
+
+- name: Convert Markdown page into HTML
+  shell: >
+    markdown {{ shadowsocks_file_docs }} | \
+    cat header.html - footer.html > {{ nginx_path_webroot }}/index.html
+  args:
+    chdir: '{{ shadowsocks_path_docs }}'
+
+- name: Generate QR code
+  # The ss:// URI format is documented here:
+  #   http://shadowsocks.org/en/config/quick-guide.html
+  shell: >
+    echo -n '{{ shadowsocks_conf.method }}:{{ shadowsocks_password }}@{{ ansible_default_ipv4.address }}:{{ shadowsocks_conf.server_port }}' | \
+    base64 --wrap=0 | \
+    sed 's/^/ss:\/\//' | \
+    qrencode -s 8 -o {{ shadowsocks_qr_code }}
+
+- name: Ensure docs is right owner
+  file:
+    path: '{{ nginx_path_webroot }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+    recurse: yes
+  notify: restart nginx
+
+- name: Enable Nginx's vhost
+  template:
+    src: nginx.conf.j2
+    dest: '{{ nginx_path_servers }}/{{ shadowsocks_domain }}.conf'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+  notify: restart nginx

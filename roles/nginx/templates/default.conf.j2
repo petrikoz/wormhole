@@ -1,0 +1,16 @@
+server {
+  listen   80       default_server;
+  listen   [::]:80  default_server;
+
+  include  enable/acme.conf;
+
+  root     {{ nginx_path_webroot }};
+  index    index.html;
+
+  location  /  {
+    autoindex             off;
+
+    auth_basic            "For members only! Are you?";
+    auth_basic_user_file  {{ nginx_file_htpasswd }};
+  }
+}

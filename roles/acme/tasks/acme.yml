@@ -1,0 +1,49 @@
+---
+- name: Get ACME.sh installer
+  get_url:
+    url: https://get.acme.sh
+    dest: /root/installer.acme.sh
+    mode: 0500
+
+- name: Install ACME.sh
+  shell:  /root/installer.acme.sh
+
+- name: Create required directories
+  file:
+    path: '{{ item }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+    state: directory
+  with_items:
+    - '{{ acme_path_install }}'
+    - '{{ nginx_path_webroot }}/.well-known'
+
+- name: Issue certificates
+  shell: '{{ acme_sh }} --issue -d {{ acme_domain }} -d www.{{ acme_domain }} -w {{ nginx_path_webroot }}'
+
+- name: Generate Diffie-Hellman Group
+  openssl_dhparam:
+    out: '{{ acme_path }}/dhparams.pem'
+    size: 3096
+
+- name: Install certificates
+  shell: >
+    {{ acme_sh }} --install-cert -d {{ acme_domain }} \
+                  --fullchain-file  {{ acme_path_install }}/fullchain.pem \
+                  --key-file        {{ acme_path_install }}/key.pem \
+                  --reloadcmd       "service nginx force-reload"
+
+- name: Ensure certificates right owner
+  file:
+    name: '{{ acme_path }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+    recurse: yes
+
+- name: Add new config for default vhost
+  template:
+    src: default.conf.j2
+    dest: '{{ nginx_path_vhost }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+  notify: restart nginx

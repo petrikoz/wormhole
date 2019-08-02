@@ -1,0 +1,20 @@
+---
+nginx_auth_user: worm
+
+nginx_file_htpasswd: '{{ nginx_path_auth }}/.htpasswd'
+nginx_file_password: '{{ nginx_path_auth }}/password.txt'
+
+nginx_group: root
+
+nginx_packages:
+  - nginx
+  # required for the `htpasswd` command
+  - apache2-utils
+
+nginx_path: /etc/nginx
+nginx_path_auth: '{{ nginx_path }}/auth'
+nginx_path_servers: '{{ nginx_path }}/servers'
+nginx_path_vhost: '{{ nginx_path_servers }}/default.conf'
+nginx_path_webroot: /var/www/html
+
+nginx_user: www-data

@@ -1,0 +1,9 @@
+{
+    "server": "0.0.0.0",
+    "server_port": {{ shadowsocks_conf.server_port }},
+    "local_port": {{ shadowsocks_conf.local_port }},
+    "password": "{{ shadowsocks_password }}",
+    "timeout": {{ shadowsocks_conf.timeout }},
+    "method": "{{ shadowsocks_conf.method }}",
+    "fast_open": {{ shadowsocks_conf.tcp_fast_open }}
+}

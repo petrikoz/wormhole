@@ -1,0 +1,7 @@
+---
+ssh_authorized_key: '{{ lookup("file", lookup("env","HOME") + "/.ssh/id_ed25519.pub") }}'
+
+ssh_rsa_host_key_change_verification: /etc/ssh/ssh_host_rsa_key_was_regenerated
+ssh_rsa_host_key_size: 4096
+ssh_rsa_host_private_key: /etc/ssh/ssh_host_rsa_key
+ssh_rsa_host_public_key: '{{ ssh_rsa_host_private_key }}.pub'

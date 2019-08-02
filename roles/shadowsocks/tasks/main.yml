@@ -1,0 +1,3 @@
+---
+- import_tasks: shadowsocks.yml
+  tags: ['shadowsocks']

@@ -1,0 +1,3 @@
+---
+dnsmasq_custom_domain: '{{ common_hostname }}'
+dnsmasq_systemd_path: /etc/systemd/system/dnsmasq.service.d

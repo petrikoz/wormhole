@@ -1,0 +1,23 @@
+server {
+  listen  [::]:80  default_server  ipv6only=off;
+  return  301      https://$host$request_uri;
+}
+server {
+  listen               [::]:443  ssl  default_server  ipv6only=off;
+
+  ssl_certificate      {{ acme_path_install }}/fullchain.pem;
+  ssl_certificate_key  {{ acme_path_install }}/key.pem;
+
+  root                 {{ nginx_path_webroot }};
+  index                index.html;
+
+  include              enable/acme.conf;
+  include              enable/ssl.conf;
+
+  location  /  {
+    autoindex             off;
+
+    auth_basic            "For members only! Are you?";
+    auth_basic_user_file  {{ nginx_file_htpasswd }};
+  }
+}

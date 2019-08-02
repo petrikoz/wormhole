@@ -1,0 +1,15 @@
+---
+- name: Configure the Server and install required software
+# ========================================================
+  hosts: wormhole
+
+  become: true
+
+  roles:
+  - common
+  - ssh
+  - dnsmasq
+  - nginx
+  - acme
+  - shadowsocks
+  - ufw
