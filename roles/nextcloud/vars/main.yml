@@ -1,0 +1,31 @@
+---
+nextcloud_admin: nextcloud
+nextcloud_admin_email: nextcloud@example.com
+
+nextcloud_apps: ['news']
+
+nextcloud_base_group: 'users'
+nextcloud_base_user: 'user'
+
+nextcloud_domain: 'cloud.{{ dnsmasq_custom_domain|default(common_hostname) }}'
+
+nextcloud_file_config: '{{ nextcloud_path_webroot }}/config/config.php'
+nextcloud_file_password: '{{ nextcloud_path }}/password.txt'
+nextcloud_file_source_code: '{{ nextcloud_path }}/latest.tar.bz2'
+
+nextcloud_path: /opt/nextcloud
+nextcloud_path_webroot: /var/www/nextcloud
+
+nextcloud_php_fpm: 'php{{ nextcloud_php_version }}-fpm'
+nextcloud_php_packages:
+  - php-apcu
+  - 'php{{ nextcloud_php_version }}-curl'
+  - 'php{{ nextcloud_php_version }}-fpm'
+  - 'php{{ nextcloud_php_version }}-gd'
+  - 'php{{ nextcloud_php_version }}-intl'
+  - 'php{{ nextcloud_php_version }}-mbstring'
+  - 'php{{ nextcloud_php_version }}-sqlite3'
+  - 'php{{ nextcloud_php_version }}-xml'
+  - 'php{{ nextcloud_php_version }}-zip'
+nextcloud_php_path: '/etc/php/{{ nextcloud_php_version }}'
+nextcloud_php_version: 7.2

@@ -1,0 +1,101 @@
+---
+- name: '[CONFIG] - Generate a random password'
+  shell: 'date +%s | sha256sum | base64 | head -c 10 > {{ nextcloud_file_password }}'
+  args:
+    creates: '{{ nextcloud_file_password }}'
+  when: nextcloud_admin_password is undefined
+
+- name: '[CONFIG] - Set permissions on password file'
+  file:
+    path: '{{ nextcloud_file_password }}'
+    owner: root
+    group: root
+    mode: 0600
+  when: nextcloud_admin_password is undefined
+
+- name: '[CONFIG] - Register admin password'
+  command: 'cat {{ nextcloud_file_password }}'
+  register: nextcloud_password
+  changed_when: no
+  when: nextcloud_admin_password is undefined
+
+- name: '[CONFIG] - Set nextcloud_admin_password'
+  set_fact: nextcloud_admin_password=nextcloud_password.stdout
+  when: nextcloud_admin_password is undefined
+
+- name: '[CONFIG] - Generate config'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: >
+    php occ maintenance:install \
+      --admin-email="{{ nextcloud_admin_email }}" \
+      --admin-pass="{{ nextcloud_admin_password }}" \
+      --admin-user="{{ nextcloud_admin }}" \
+      --data-dir="{{ nextcloud_path_webroot }}/data"
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Configure cli urls'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: >
+    php occ config:system:set \
+      overwrite.cli.url --value "http://{{ nextcloud_domain }}/"
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Configure cache'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: >
+    php occ config:system:set \
+      memcache.local --value "\OC\Memcache\APCu"
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Set cron mode for background jobs'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ background:cron
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Enable cron for background jobs'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  cron:
+    job: 'php -f {{ nextcloud_path_webroot }}/cron.php'
+    minute: '*/5'
+    name: Nextcloud background jobs
+    user: '{{ nginx_user }}'
+
+- name: '[CONFIG] - Add trusted domain'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: >
+    php occ config:system:set \
+      trusted_domains 1 --value="{{ nextcloud_domain }}"
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Install AppOrder'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ app:install apporder
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Use AppOrder as "defaultapp"'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ config:system:set defaultapp --value="apporder"
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[CONFIG] - Install apps'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ app:install {{ item }}
+  with_items: '{{ nextcloud_apps }}'
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'

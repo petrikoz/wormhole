@@ -1,0 +1,54 @@
+---
+- name: Create required directories
+  file:
+    path: '{{ nextcloud_path }}'
+    group: root
+    owner: root
+    state: directory
+
+- import_tasks: php.yml
+  tags: ['nextcloud-php']
+
+- name: Download source code
+  get_url:
+    url: https://download.nextcloud.com/server/releases/latest.tar.bz2
+    checksum: 'sha256:https://download.nextcloud.com/server/releases/latest.tar.bz2.sha256'
+    dest: '{{ nextcloud_file_source_code }}'
+
+- name: Unarchive source code
+  unarchive:
+    src: '{{ nextcloud_file_source_code }}'
+    dest: /var/www
+    remote_src: yes
+
+- name: Ensure files have right owner
+  file:
+    path: '{{ nextcloud_path_webroot }}'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+    recurse: yes
+
+- import_tasks: config.yml
+  tags: ['nextcloud-config']
+
+- name: Ensure files have right permissions
+  shell: |
+    find . -type d -exec chmod 0750 {} +
+    find . -type f -exec chmod 0640 {} +
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: Copy FastCGI params for Nginx
+  copy:
+    src: fastcgi.conf
+    dest: '{{ nginx_path }}/params/fastcgi.conf'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+
+- name: Enable Nginx's vhost
+  template:
+    src: nginx.conf.j2
+    dest: '{{ nginx_path_servers }}/{{ nextcloud_domain }}.conf'
+    group: '{{ nginx_group }}'
+    owner: '{{ nginx_user }}'
+  notify: restart nginx
