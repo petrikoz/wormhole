@@ -76,6 +76,10 @@
   hostname:
     name: '{{ common_hostname }}'
 
+- name: Set timezone
+  timezone:
+    name: '{{ common_timezone }}'
+
 - name: Enable color in BASH-prompt
   replace:
     path: /root/.bashrc

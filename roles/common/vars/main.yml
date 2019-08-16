@@ -69,3 +69,5 @@ common_sysctl_values:
   - { key: fs.suid_dumpable, value: 0 }
   - { key: fs.protected_hardlinks, value: 1 }
   - { key: fs.protected_symlinks, value: 1 }
+
+common_timezone: Asia/Yekaterinburg
