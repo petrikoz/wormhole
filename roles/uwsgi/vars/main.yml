@@ -4,5 +4,5 @@ uwsgi_packages:
   - uwsgi-plugin-php
   - uwsgi-plugin-python3
 
-uwsgi_path_socks: /run/uwsgi
+uwsgi_path_socks: /run/uwsgi/app
 uwsgi_path_vassals: /etc/uwsgi/apps-enabled
