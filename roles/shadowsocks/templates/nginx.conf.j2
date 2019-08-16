@@ -2,7 +2,7 @@ server {
   listen       80;
   listen       [::]:80;
 
-  server_name  .{{ shadowsocks_domain }};
+  server_name  {{ shadowsocks_domain }};
 
   root         {{ nginx_path_webroot }};
   index        index.html;

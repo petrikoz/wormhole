@@ -49,7 +49,7 @@
 - name: Enable Nginx's vhost
   template:
     src: nginx.conf.j2
-    dest: '{{ nginx_path_servers }}/{{ shadowsocks_domain }}.conf'
+    dest: '{{ nginx_path_servers }}/shadowsocks.conf'
     group: '{{ nginx_group }}'
     owner: '{{ nginx_user }}'
   notify: restart nginx

@@ -6,7 +6,7 @@ shadowsocks_conf:
   tcp_fast_open: 'true'
   timeout: 600
 
-shadowsocks_domain: 'ss.{{ dnsmasq_custom_domain|default(common_hostname) }}'
+shadowsocks_domain: '.ss.{{ dnsmasq_custom_domain|default(common_hostname) }}'
 
 shadowsocks_file_docs: shadowsocks-docs.md
 shadowsocks_file_password: '{{ shadowsocks_path }}/password.txt'
