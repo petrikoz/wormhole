@@ -4,10 +4,11 @@ Ansible's playbook for deploy personal server.
 
 ## Soft
 
-* Shadowsocks - for encrypted access to remote server
-* Dnsmasq - for hidden personal name resolve
-* Nextcloud - replace for most social services
-* Acme.sh - for free SSL via Let's Encrypt
+* Acme.sh — for free SSL via Let's Encrypt
+* Dnsmasq — for hidden personal name resolve
+* Nextcloud — replace for most social services
+* Shadowsocks — for encrypted access to remote server
+* uWSGI — for run projects on PHP and Pyhton
 
 ## Install
 

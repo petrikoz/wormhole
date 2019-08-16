@@ -13,4 +13,5 @@
   - acme
   - shadowsocks
   - ufw
+  - uwsgi
   - nextcloud
