@@ -31,7 +31,7 @@
       --admin-email="{{ nextcloud_admin_email }}" \
       --admin-pass="{{ nextcloud_admin_password }}" \
       --admin-user="{{ nextcloud_admin }}" \
-      --data-dir="{{ nextcloud_path_webroot }}/data"
+      --data-dir="{{ nextcloud_path_data }}"
   args:
     chdir: '{{ nextcloud_path_webroot }}'
 
@@ -60,15 +60,6 @@
   args:
     chdir: '{{ nextcloud_path_webroot }}'
 
-- name: '[CONFIG] - Enable cron for background jobs'
-  become: yes
-  become_user: '{{ nginx_user }}'
-  cron:
-    job: 'php -f {{ nextcloud_path_webroot }}/cron.php'
-    minute: '*/5'
-    name: Nextcloud background jobs
-    user: '{{ nginx_user }}'
-
 - name: '[CONFIG] - Add trusted domain'
   become: yes
   become_user: '{{ nginx_user }}'
@@ -78,19 +69,15 @@
   args:
     chdir: '{{ nextcloud_path_webroot }}'
 
-- name: '[CONFIG] - Install AppOrder'
+- name: '[CONFIG] - Install and configure AppOrder'
   become: yes
   become_user: '{{ nginx_user }}'
-  shell: php occ app:install apporder
+  shell: >
+    php occ app:install apporder && \
+    php occ config:system:set defaultapp --value="apporder"
   args:
     chdir: '{{ nextcloud_path_webroot }}'
-
-- name: '[CONFIG] - Use AppOrder as "defaultapp"'
-  become: yes
-  become_user: '{{ nginx_user }}'
-  shell: php occ config:system:set defaultapp --value="apporder"
-  args:
-    chdir: '{{ nextcloud_path_webroot }}'
+  tags: ['nextcloud-apps']
 
 - name: '[CONFIG] - Install apps'
   become: yes
@@ -99,3 +86,4 @@
   with_items: '{{ nextcloud_apps }}'
   args:
     chdir: '{{ nextcloud_path_webroot }}'
+  tags: ['nextcloud-apps']

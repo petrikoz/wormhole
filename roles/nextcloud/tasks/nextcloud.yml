@@ -6,9 +6,6 @@
     owner: root
     state: directory
 
-- import_tasks: php.yml
-  tags: ['nextcloud-php']
-
 - name: Download source code
   get_url:
     url: https://download.nextcloud.com/server/releases/latest.tar.bz2
@@ -24,9 +21,13 @@
 - name: Ensure files have right owner
   file:
     path: '{{ nextcloud_path_webroot }}'
-    group: '{{ nginx_group }}'
+    group: '{{ nginx_user }}'
     owner: '{{ nginx_user }}'
     recurse: yes
+
+- name: Install PHP packages
+  apt:
+    name: '{{ nextcloud_php_packages }}'
 
 - import_tasks: config.yml
   tags: ['nextcloud-config']
@@ -38,17 +39,16 @@
   args:
     chdir: '{{ nextcloud_path_webroot }}'
 
-- name: Copy FastCGI params for Nginx
-  copy:
-    src: fastcgi.conf
-    dest: '{{ nginx_path }}/params/fastcgi.conf'
-    group: '{{ nginx_group }}'
-    owner: '{{ nginx_user }}'
+- name: Enable uWSGI's vassal
+  template:
+    src: uwsgi.ini.j2
+    dest: '{{ uwsgi_path_vassals }}/nextcloud.ini'
+  notify: restart uwsgi
 
 - name: Enable Nginx's vhost
   template:
     src: nginx.conf.j2
-    dest: '{{ nginx_path_servers }}/{{ nextcloud_domain }}.conf'
-    group: '{{ nginx_group }}'
+    dest: '{{ nginx_path_servers }}/nextcloud.conf'
+    group: '{{ nginx_user }}'
     owner: '{{ nginx_user }}'
   notify: restart nginx

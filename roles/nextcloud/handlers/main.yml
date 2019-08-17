@@ -1,5 +1,0 @@
----
-- name: php-fpm restart
-  service:
-    name: '{{ nextcloud_php_fpm }}'
-    state: restarted
