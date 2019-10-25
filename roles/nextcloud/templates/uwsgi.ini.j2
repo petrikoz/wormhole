@@ -22,32 +22,29 @@ touch-reload = %p
 ; disable uWSGI request logging
 disable-logging = true
 
+; automatically rewrite SCRIPT_NAME and PATH_INFO
+manage-script-name = true
+
 ; enforce a DOCUMENT_ROOT
 php-docroot = {{ nextcloud_path_webroot }}
-; limit allowed extensions
 php-allowed-ext = .php
-; and search for index.php if required
 php-index = index.php
 
 ; set php configuration for this instance of php, no need to edit global php.ini
 php-set = date.timezone=Asia/Yekaterinburg
 php-set = expose_php=false
-; avoid security risk of leaving sessions in world-readable /tmp
-php-set = session.save_path={{ nextcloud_path_data }}
+php-set = session.save_path={{ nextcloud_path_data }}/session
 
-; port of php directives set upstream in {{ nextcloud_path_webroot }}/.user.ini for use with PHP-FPM
+; port of php directives set upstream in {{ nextcloud_path_webroot }}/.user.ini
 php-set = upload_max_filesize=513M
 php-set = post_max_size=513M
 php-set = memory_limit=512M
-php-set = output_buffering=off
-
-; opcache
-php-set = zend_extension=opcache
+php-set = mbstring.func_overload=0
+php-set = always_populate_raw_post_data=-1
+php-set = default_charset='UTF-8'
+php-set = output_buffering=0
 
 ; user cache
 php-set = apc.enable_cli=1
 
-; web server is already handling URL rewriting, so tell NextCloud not to repeat this
-env = front_controller_active=true
-
-cron2 = minute=-5,unique=1 /usr/bin/php -f {{ nextcloud_path_webroot }}/cron.php 1>/dev/null
+cron2 = minute=-5,unique=1 /usr/bin/php -f %(php-docroot)/cron.php 1>/dev/null

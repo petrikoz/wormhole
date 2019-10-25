@@ -14,8 +14,7 @@ server {
   # Remove X-Powered-By, which is an information leak
   uwsgi_hide_header  X-Powered-By;
 
-  # set max upload size
-  client_max_body_size  512M;
+  root  {{ nextcloud_path_webroot }};
 
   location  =  /.well-known/carddav {
     return  301  $scheme://$host/remote.php/dav;
@@ -24,11 +23,7 @@ server {
     return  301  $scheme://$host/remote.php/dav;
   }
 
-  root  {{ nextcloud_path_webroot }};
-
-  location  / {
-    rewrite  ^  /index.php$request_uri;
-  }
+  client_max_body_size  512M;
 
   location  ~  ^\/(?:build|tests|config|lib|3rdparty|templates|data)\/ {
     deny  all;
@@ -37,9 +32,12 @@ server {
     deny  all;
   }
 
+  location  / {
+    return  301  $scheme://$host/index.php$request_uri;
+  }
   location  ~  ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|ocs-provider\/.+)\.php(?:$|\/) {
-    include            params/uwsgi.conf;
-    uwsgi_modifier1    14;
+    include          params/uwsgi.conf;
+    uwsgi_modifier1  14;
 
     # Avoid duplicate headers confusing OC checks
     uwsgi_hide_header  Referrer-Policy;
@@ -47,7 +45,7 @@ server {
     uwsgi_hide_header  X-Permitted-Cross-Domain-Policies;
     uwsgi_hide_header  X-Robots-Tag;
 
-    uwsgi_pass         unix:{{ nextcloud_uwsgi_sock }};
+    uwsgi_pass  unix:{{ nextcloud_uwsgi_sock }};
   }
 
   location  ~  ^\/(?:updater|ocs-provider)(?:$|\/) {
@@ -58,9 +56,10 @@ server {
   # Adding the cache control header for js and css files
   # Make sure it is BELOW the PHP block
   location  ~  ^\/.+[^\/]\.(?:css|js|woff2?|svg|gif)$ {
-    try_files   $uri                               /index.php$request_uri;
+    access_log  off;
+    try_files   $uri  /index.php$request_uri;
 
-    add_header  Cache-Control                      "public, max-age=15778463";
+    add_header  Cache-Control  "public, max-age=15778463";
 
     # Add headers to serve security related headers  (It is intended
     # to have those duplicated to the ones above)
@@ -68,14 +67,10 @@ server {
     add_header  X-Download-Options                 noopen;
     add_header  X-Permitted-Cross-Domain-Policies  none;
     add_header  X-Robots-Tag                       none;
-
-    # Optional: Don't log access to assets
-    access_log  off;
   }
 
   location  ~  ^\/.+[^\/]\.(?:png|html|ttf|ico|jpg|jpeg)$ {
-    try_files   $uri  /index.php$request_uri;
-    # Optional: Don't log access to other assets
     access_log  off;
+    try_files   $uri  /index.php$request_uri;
   }
 }
