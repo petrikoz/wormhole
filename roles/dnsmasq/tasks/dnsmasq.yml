@@ -11,12 +11,6 @@
     state: stopped
   ignore_errors: yes
 
-- name: Generate the dnsmasq configuration file
-  template:
-    src: dnsmasq.conf.j2
-    dest: /etc/dnsmasq.conf
-  notify: restart dnsmasq
-
 - name: Create the dnsmasq systemd drop-in configuration directory
   file:
     path: '{{ dnsmasq_systemd_path }}'
