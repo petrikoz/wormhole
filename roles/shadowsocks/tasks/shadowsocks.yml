@@ -76,5 +76,8 @@
     name: shadowsocks-libev.service
     state: restarted
 
+- import_tasks: firewall.yml
+  tags: ['shadowsocks-firewall']
+
 - import_tasks: docs.yml
   tags: ['shadowsocks-docs']

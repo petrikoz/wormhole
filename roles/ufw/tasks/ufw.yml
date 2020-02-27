@@ -22,12 +22,6 @@
     rule: allow
   with_items: [http, https]
 
-- name: Ensure allows Shadowsocks
-  ufw:
-    to_port: '{{ shadowsocks_conf.server_port }}'
-    proto: any
-    rule: allow
-
 - name: Ensure limits SSH
   ufw:
     port: ssh
