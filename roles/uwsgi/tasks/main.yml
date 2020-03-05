@@ -1,3 +1,4 @@
 ---
-- import_tasks: uwsgi.yml
-  tags: ['uwsgi']
+- name: Install packages
+  apt:
+    name: '{{ uwsgi_packages }}'
