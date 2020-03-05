@@ -15,27 +15,27 @@
     owner: '{{ nginx_user }}'
     state: directory
   with_items:
-    - '{{ acme_path_install }}'
+    - '{{ ssl_path_domain }}'
     - '{{ nginx_path_webroot }}/.well-known'
 
 - name: Issue certificates
-  shell: '{{ acme_sh }} --issue -d {{ acme_domain }} -d www.{{ acme_domain }} -w {{ nginx_path_webroot }}'
+  shell: '{{ ssl_acme_sh }} --issue -d {{ ssl_domain }} -d www.{{ ssl_domain }} -w {{ nginx_path_webroot }}'
 
 - name: Generate Diffie-Hellman Group
   openssl_dhparam:
-    out: '{{ acme_path }}/dhparams.pem'
+    out: '{{ ssl_path }}/dhparams.pem'
     size: 3096
 
 - name: Install certificates
   shell: >
-    {{ acme_sh }} --install-cert -d {{ acme_domain }} \
-                  --fullchain-file  {{ acme_path_install }}/fullchain.pem \
-                  --key-file        {{ acme_path_install }}/key.pem \
+    {{ ssl_acme_sh }} --install-cert -d {{ ssl_domain }} \
+                  --fullchain-file  {{ ssl_path_domain }}/fullchain.pem \
+                  --key-file        {{ ssl_path_domain }}/key.pem \
                   --reloadcmd       "service nginx force-reload"
 
 - name: Ensure certificates right owner
   file:
-    name: '{{ acme_path }}'
+    name: '{{ ssl_path }}'
     group: '{{ nginx_group }}'
     owner: '{{ nginx_user }}'
     recurse: yes
@@ -46,4 +46,4 @@
     dest: '{{ nginx_path_vhost }}'
     group: '{{ nginx_group }}'
     owner: '{{ nginx_user }}'
-  notify: restart nginx
+  notify: nginx restarted

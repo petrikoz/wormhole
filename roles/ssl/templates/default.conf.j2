@@ -2,11 +2,12 @@ server {
   listen  [::]:80  default_server  ipv6only=off;
   return  301      https://$host$request_uri;
 }
+
 server {
   listen               [::]:443  ssl  default_server  ipv6only=off;
 
-  ssl_certificate      {{ acme_path_install }}/fullchain.pem;
-  ssl_certificate_key  {{ acme_path_install }}/key.pem;
+  ssl_certificate      {{ ssl_path_domain }}/fullchain.pem;
+  ssl_certificate_key  {{ ssl_path_domain }}/key.pem;
 
   root                 {{ nginx_path_webroot }};
   index                index.html;

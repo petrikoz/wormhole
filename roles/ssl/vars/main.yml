@@ -1,0 +1,7 @@
+---
+ssl_domain: wormhole.itcase.pro
+
+ssl_path: '{{ nginx_path }}/ssl'
+ssl_path_domain: '{{ ssl_path }}/{{ ssl_domain }}'
+
+ssl_acme_sh: /root/.acme.sh/acme.sh
