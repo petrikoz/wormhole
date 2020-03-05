@@ -1,0 +1,7 @@
+---
+- name: Ensure UFW allows Nginx
+  ufw:
+    port: '{{ item }}'
+    proto: tcp
+    rule: allow
+  with_items: [http, https]

@@ -34,4 +34,4 @@
     dest: '{{ nginx_path_vhost }}'
     group: '{{ nginx_group }}'
     owner: '{{ nginx_user }}'
-  notify: restart nginx
+  notify: nginx restarted
