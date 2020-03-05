@@ -1,3 +1,28 @@
 ---
-- import_tasks: ufw.yml
-  tags: ['ufw']
+- name: Install package
+  apt:
+    package: ufw
+
+- name: Disable logging
+  lineinfile:
+    dest: /etc/ufw/ufw.conf
+    regexp: '^LOGLEVEL'
+    line: 'LOGLEVEL=off'
+
+- name: Change the default forward policy
+  lineinfile:
+    dest: /etc/default/ufw
+    regexp: '^DEFAULT_FORWARD_POLICY'
+    line: 'DEFAULT_FORWARD_POLICY="ACCEPT"'
+
+- name: Ensure limits SSH
+  ufw:
+    port: ssh
+    proto: tcp
+    rule: limit
+
+- name: Ensure is enabled and denies by default
+  ufw:
+    direction: incoming
+    policy: deny
+    state: enabled
