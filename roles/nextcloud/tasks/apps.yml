@@ -1,0 +1,23 @@
+---
+- name: '[APPS] - Install and configure AppOrder'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ app:install apporder && php occ config:system:set defaultapp --value="apporder"
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[APPS] - Install apps'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ app:install {{ item }}
+  with_items: '{{ nextcloud_apps }}'
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: '[APPS] - Disable apps'
+  become: yes
+  become_user: '{{ nginx_user }}'
+  shell: php occ app:disable {{ item }}
+  with_items: '{{ nextcloud_apps_disable }}'
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'

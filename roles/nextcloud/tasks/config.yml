@@ -38,18 +38,14 @@
 - name: '[CONFIG] - Configure cli urls'
   become: yes
   become_user: '{{ nginx_user }}'
-  shell: >
-    php occ config:system:set \
-      overwrite.cli.url --value "http://{{ nextcloud_domain }}/"
+  shell: php occ config:system:set overwrite.cli.url --value "http://{{ nextcloud_domain }}/"
   args:
     chdir: '{{ nextcloud_path_webroot }}'
 
 - name: '[CONFIG] - Configure cache'
   become: yes
   become_user: '{{ nginx_user }}'
-  shell: >
-    php occ config:system:set \
-      memcache.local --value "\OC\Memcache\APCu"
+  shell: php occ config:system:set memcache.local --value "\OC\Memcache\APCu"
   args:
     chdir: '{{ nextcloud_path_webroot }}'
 
@@ -63,27 +59,6 @@
 - name: '[CONFIG] - Add trusted domain'
   become: yes
   become_user: '{{ nginx_user }}'
-  shell: >
-    php occ config:system:set \
-      trusted_domains 1 --value="{{ nextcloud_domain }}"
+  shell: php occ config:system:set trusted_domains 1 --value="{{ nextcloud_domain }}"
   args:
     chdir: '{{ nextcloud_path_webroot }}'
-
-- name: '[CONFIG] - Install and configure AppOrder'
-  become: yes
-  become_user: '{{ nginx_user }}'
-  shell: >
-    php occ app:install apporder && \
-    php occ config:system:set defaultapp --value="apporder"
-  args:
-    chdir: '{{ nextcloud_path_webroot }}'
-  tags: ['nextcloud-apps']
-
-- name: '[CONFIG] - Install apps'
-  become: yes
-  become_user: '{{ nginx_user }}'
-  shell: php occ app:install {{ item }}
-  with_items: '{{ nextcloud_apps }}'
-  args:
-    chdir: '{{ nextcloud_path_webroot }}'
-  tags: ['nextcloud-apps']

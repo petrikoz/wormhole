@@ -1,3 +1,57 @@
 ---
-- import_tasks: nextcloud.yml
-  tags: ['nextcloud']
+- name: Create required directories
+  file:
+    path: '{{ nextcloud_path }}'
+    group: root
+    owner: root
+    state: directory
+
+- name: Download source code
+  get_url:
+    url: https://download.nextcloud.com/server/releases/latest.tar.bz2
+    checksum: 'sha256:https://download.nextcloud.com/server/releases/latest.tar.bz2.sha256'
+    dest: '{{ nextcloud_file_source_code }}'
+
+- name: Unarchive source code
+  unarchive:
+    src: '{{ nextcloud_file_source_code }}'
+    dest: /var/www
+    remote_src: yes
+
+- name: Ensure files have right owner
+  file:
+    path: '{{ nextcloud_path_webroot }}'
+    group: '{{ nginx_user }}'
+    owner: '{{ nginx_user }}'
+    recurse: yes
+
+- name: Install PHP packages
+  apt:
+    name: '{{ nextcloud_php_packages }}'
+
+- import_tasks: config.yml
+  tags: ['nextcloud-config']
+
+- import_tasks: apps.yml
+  tags: ['nextcloud-apps']
+
+- name: Ensure files have right permissions
+  shell: |
+    find . -type d -exec chmod 0750 {} +
+    find . -type f -exec chmod 0640 {} +
+  args:
+    chdir: '{{ nextcloud_path_webroot }}'
+
+- name: Enable uWSGI's vassal
+  template:
+    src: uwsgi.ini.j2
+    dest: '{{ uwsgi_path_vassals }}/nextcloud.ini'
+  notify: uwsgi restarted
+
+- name: Enable Nginx's vhost
+  template:
+    src: nginx.conf.j2
+    dest: '{{ nginx_path_servers }}/nextcloud.conf'
+    group: '{{ nginx_user }}'
+    owner: '{{ nginx_user }}'
+  notify: nginx restarted

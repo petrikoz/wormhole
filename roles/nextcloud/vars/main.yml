@@ -2,12 +2,30 @@
 nextcloud_admin: nextcloud
 nextcloud_admin_email: nextcloud@example.com
 
-nextcloud_apps: ['news']
+nextcloud_apps:
+  - calendar
+  - contacts
+  - maps
+  - news
+  - twofactor_nextcloud_notification
+  - twofactor_totp
+nextcloud_apps_disable:
+  - encryption
+  - federation
+  - files_external
+  - files_pdfviewer
+  - files_videoplayer
+  - firstrunwizard
+  - photos
+  - support
+  - survey_client
+  - systemtags
+  - user_ldap
 
 nextcloud_base_group: 'users'
 nextcloud_base_user: 'user'
 
-nextcloud_domain: 'cloud.{{ dnsmasq_custom_domain|default(common_hostname) }}'
+nextcloud_domain: 'cloud.{{ common_hostname }}'
 
 nextcloud_file_config: '{{ nextcloud_path_webroot }}/config/config.php'
 nextcloud_file_password: '{{ nextcloud_path }}/password.txt'
