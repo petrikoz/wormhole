@@ -70,7 +70,7 @@
     mode: 0644
 
 - name: Enable service so it starts at boot, and bring it up
-  systemd:
+  service:
     daemon_reload: yes
     enabled: yes
     name: shadowsocks-libev.service

@@ -6,12 +6,11 @@
   become: true
 
   roles:
-  - common
-  - ssh
-  - dnsmasq
-  - nginx
-  - acme
-  - shadowsocks
-  - ufw
-  - uwsgi
-  - nextcloud
+  - { role: common,       tags: ['common'] }
+  - { role: ssh,          tags: ['ssh'] }
+  - { role: ufw,          tags: ['ufw'] }
+  - { role: nginx,        tags: ['nginx'] }
+  - { role: ssl,          tags: ['ssl'] }
+  - { role: uwsgi,        tags: ['uwsgi'] }
+  - { role: nextcloud,    tags: ['nextcloud'] }
+  - { role: shadowsocks,  tags: ['shadowsocks', 'never'] }

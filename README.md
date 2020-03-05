@@ -1,14 +1,15 @@
 # WormHole
 
-Ansible's playbook for deploy personal server.
+Ansible's playbook for deploy personal server on Ubuntu.
 
 ## Soft
 
-* Acme.sh — for free SSL via Let's Encrypt
-* Dnsmasq — for hidden personal name resolve
-* Nextcloud — replace for most social services
-* Shadowsocks — for encrypted access to remote server
-* uWSGI — for run projects on PHP and Pyhton
+* [UFW](https://launchpad.net/ufw) — easy use firewall
+* [Nginx](https://www.nginx.com/) — modern web server
+* [acme.sh](https://acme.sh) — for free SSL via Let's Encrypt
+* [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) — for run sites on PHP and Python
+* [Nextcloud](https://nextcloud.com/) — personal cloud service
+* [Shadowsocks](https://shadowsocks.org) — a secure socks5 proxy (disabled by default)
 
 ## Install
 
