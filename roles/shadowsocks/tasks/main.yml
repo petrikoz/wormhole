@@ -1,3 +1,83 @@
 ---
-- import_tasks: shadowsocks.yml
-  tags: ['shadowsocks']
+- name: Apply the sysctl value to enable TCP Fast Open
+  sysctl:
+    name: net.ipv4.tcp_fastopen
+    state: present
+    value: 3
+
+- name: Install packages
+  apt:
+    name: '{{ shadowsocks_packages }}'
+
+- name: Generate a random password
+  shell: 'openssl rand -base64 48 > {{ shadowsocks_file_password }}'
+  args:
+    creates: '{{ shadowsocks_file_password }}'
+  when: shadowsocks_password is undefined
+
+- name: Set permissions on password file
+  file:
+    path: '{{ shadowsocks_file_password }}'
+    group: root
+    owner: root
+    mode: 0600
+  when: shadowsocks_password is undefined
+
+- name: Register password
+  command: 'cat {{ shadowsocks_file_password }}'
+  register: shadowsocks_password_generated
+  changed_when: no
+  when: shadowsocks_password is undefined
+
+- name: Set shadowsocks_password
+  set_fact: shadowsocks_password=shadowsocks_password_generated.stdout
+  when: shadowsocks_password is undefined
+
+- name: Create config directory
+  file:
+    path: '{{ shadowsocks_path }}'
+    owner: root
+    # The nobody user in nogroup needs to be able to read the config file
+    group: nogroup
+    # It is safe to make this directory world read only because the password
+    # file and config file are not
+    mode: 0755
+    state: directory
+
+- name: Generate config file
+  template:
+    src: config.json.j2
+    dest: '{{ shadowsocks_path }}/config.json'
+    # The nobody user in nogroup needs to be able to read the config file
+    group: nogroup
+    mode: 0640
+
+- name: Populate systemd defaults
+  template:
+    src: shadowsocks-libev.default.j2
+    dest: '/etc/default/shadowsocks-libev'
+    mode: 0644
+
+- name: Create systemd configuration directory
+  file:
+    path: '{{ shadowsocks_path_systemd }}'
+    state: directory
+
+- name: Generate systemd service file
+  template:
+    src: shadowsocks-libev.service.j2
+    dest: '{{ shadowsocks_path_systemd }}/10-restart-failure.conf'
+    mode: 0644
+
+- name: Enable service so it starts at boot, and bring it up
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: shadowsocks-libev.service
+    state: restarted
+
+- import_tasks: firewall.yml
+  tags: ['shadowsocks-firewall']
+
+- import_tasks: docs.yml
+  tags: ['shadowsocks-docs']
