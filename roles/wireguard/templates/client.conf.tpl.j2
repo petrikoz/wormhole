@@ -1,0 +1,20 @@
+# "КЛИЕНТ" - WireGuard Client Profile
+[Interface]
+# IP-адрес клиента
+# `IP-СЛЕДУЮЩЕЕ-ЗНАЧЕНИЕ` — последний октет в IP-адресе.
+# Нужно взять свободное значение из подсети `{{ wireguard_ip_subnet }}`.
+# Занятые можно посмотреть с помощью команды `wg show`
+Address = {{ wireguard_ip_base }}IP-СЛЕДУЮЩЕЕ-ЗНАЧЕНИЕ/32
+# IP-адрес DNS-сервера, который доступен через VPN
+DNS = {{ wireguard_dnsmasq_ip }}
+# Приватный ключ клиента (файл `client.key`)
+PrivateKey = ЗНАЧЕНИЕ-ИЗ-ФАЙЛА-{{ wireguard_path_clients }}/КЛИЕНТ/client.key
+
+[Peer]
+# Публичный ключ сервера (файл `{{ wireguard_file_server_key_pub }}`)
+PublicKey = {{ wireguard_server_key_pub }}
+# Список адресов, которые доступны через VPN.
+# Для мобильных устройств лучше использовать значение `0.0.0.0/0`
+AllowedIPs = {{ wireguard_ip_subnet }}
+# IP-адрес сервера
+Endpoint = {{ ansible_default_ipv4.address }}:{{ wireguard_port }}

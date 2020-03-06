@@ -1,0 +1,20 @@
+---
+- name: Ensure UFW allows WireGuard
+  ufw:
+    to_port: '{{ wireguard_port }}'
+    proto: 'udp'
+    rule: 'allow'
+
+- name: Ensure UFW allows DNS requests from WireGuard clients
+  ufw:
+    from_ip: '{{ wireguard_ip_subnet }}'
+    proto: 'udp'
+    rule: 'allow'
+    to_port: '53'
+
+- name: Ensure UFW allows SOCKS requests from WireGuard clients
+  ufw:
+    from_ip: '{{ wireguard_ip_subnet }}'
+    proto: any
+    rule: 'allow'
+    to_port: '{{ wireguard_dante_port }}'

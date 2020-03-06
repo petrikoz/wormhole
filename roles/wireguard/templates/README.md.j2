@@ -1,0 +1,42 @@
+# WireGuard
+
+## Новый клиент
+
+На сервере уже есть несколько конфигов-образцов для клиентов. Потому, при возникновении каких-то проблем / вопросов можно глянуть их: в каталоге `{{ wireguard_path_clients }}`.
+
+### Конфиг клиента
+
+В командах ниже нужно заменить `КЛИЕНТ` на актуальные данные (например, `vasya-desktop`).
+
+1. Создаём каталог в папке конфигов клиентов: `mkdir {{ wireguard_path_clients }}/КЛИЕНТ`
+2. Генерируем ключи: `umask 077; wg genkey | tee {{ wireguard_path_clients }}/КЛИЕНТ/client.key | wg pubkey > {{ wireguard_path_clients }}/КЛИЕНТ/client.pub`
+3. Создаём конфиг: `cp {{ wireguard_path_clients }}/client.conf.tpl {{ wireguard_path_clients }}/КЛИЕНТ/client.conf`
+4. Проверяем, что в нём актуальные данные: `vi {{ wireguard_path_clients }}/КЛИЕНТ/client.conf`
+
+### Конфиг сервера
+
+Для подключения необходимо добавить нового клиента в список в конфиге сервера.
+
+1. Делаем бекап конфига: `cp {{ wireguard_file_server_conf }} {{ wireguard_file_server_conf }}.bak`
+2. Добавляем в конец конфига следующий код, заменив заглушки на актуальные данные:
+
+    ```conf
+
+    # "КЛИЕНТ" Client Peer
+    [Peer]
+    PublicKey = ЗНАЧЕНИЕ-ИЗ-ФАЙЛА-{{ wireguard_path_clients }}/КЛИЕНТ/client.pub
+    AllowedIPs = ПОЛЕ-"Address"-ИЗ-ФАЙЛА-{{ wireguard_path_clients }}/КЛИЕНТ/client.conf
+
+    ```
+3. Перезагружаем сервис: `systemctl restart wg-quick@{{ wireguard_interface }}`
+4. Проверяем работу: `wg show`
+5. Удаляем бекап: `rm -f {{ wireguard_file_server_conf }}.bak`
+
+### Конфиг на устройство
+
+Большинство устройств поддерживает добавление конфига из файла `{{ wireguard_path_clients }}/КЛИЕНТ/client.conf`.
+Достаточно его скачать и открыть в программе.
+
+Но для мобильных устройств может быть удобнее сгенерировать QR-код.
+Сделать это можно командой `qrencode -s 6 -o /tmp/КЛИЕНТ.png < {{ wireguard_path_clients }}/КЛИЕНТ/client.conf`.
+Не забудьте удалить изображение с сервера, когда скачаете его.

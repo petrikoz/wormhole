@@ -1,0 +1,42 @@
+---
+- name: Install DNSMasq
+  apt:
+    package: dnsmasq
+    update_cache: yes
+
+- name: Stop and disable systemd-resolve
+  service:
+    name: systemd-resolved
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Create the DNSMasq drop-in configuration directory
+  file:
+    path: '{{ wireguard_dnsmasq_path_service }}'
+    state: directory
+
+- name: Generate the DNSMasq drop-in service file
+  template:
+    src: dnsmasq.service.j2
+    dest: '{{ wireguard_dnsmasq_path_service }}/10-restart-failure.conf'
+    mode: 0644
+
+- name: Configure DNSMasq
+  template:
+    src: dnsmasq.conf.j2
+    dest: /etc/dnsmasq.conf
+
+- name: Enable the DNSMasq service
+  service:
+    daemon_reload: yes
+    enabled: yes
+    name: dnsmasq
+    state: restarted
+
+- name: Copy own resolv.conf
+  copy:
+    src: resolv.conf
+    dest: /etc/resolv.conf
+    attributes: +i
+  tags: ['resolv']

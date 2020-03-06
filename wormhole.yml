@@ -13,4 +13,5 @@
   - { role: ssl,          tags: ['ssl'] }
   - { role: uwsgi,        tags: ['uwsgi'] }
   - { role: nextcloud,    tags: ['nextcloud'] }
+  - { role: wireguard,    tags: ['wireguard'] }
   - { role: shadowsocks,  tags: ['shadowsocks', 'never'] }

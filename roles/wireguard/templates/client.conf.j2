@@ -1,0 +1,17 @@
+# "{{ item[0] }}" - WireGuard Client Profile
+[Interface]
+# IP-адрес клиента
+Address = {{ wireguard_ip_base }}{{ item_idx + 2 }}/32
+# IP-адрес DNS-сервера, который доступен через VPN
+DNS = {{ wireguard_dnsmasq_ip }}
+# Приватный ключ клиента (файл `client.key`)
+PrivateKey = {{ item[1].stdout }}
+
+[Peer]
+# Публичный ключ сервера (файл `{{ wireguard_file_server_key_pub }}`)
+PublicKey = {{ wireguard_server_key_pub }}
+# Список адресов, которые доступны через VPN.
+# Для мобильных устройств лучше использовать значение `0.0.0.0/0`
+AllowedIPs = {{ wireguard_ip_subnet }}
+# IP-адрес сервера
+Endpoint = {{ ansible_default_ipv4.address }}:{{ wireguard_port }}

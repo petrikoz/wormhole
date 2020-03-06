@@ -9,6 +9,9 @@ Ansible's playbook for deploy personal server on Ubuntu.
 * [acme.sh](https://acme.sh) — for free SSL via Let's Encrypt
 * [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) — for run sites on PHP and Python
 * [Nextcloud](https://nextcloud.com/) — personal cloud service
+* [WireGuard](https://wireguard.com) — fast, modern, secure VPN tunnel
+* [Dante](https://www.inet.no/dante/) — a free SOCKS server which available only with WireGuard
+* [DNSmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) — used as DNS server with WireGuard
 * [Shadowsocks](https://shadowsocks.org) — a secure socks5 proxy (disabled by default)
 
 ## Install

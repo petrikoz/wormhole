@@ -1,0 +1,93 @@
+# Server identities
+
+# The server will log both via syslog, to stdout and to /var/log/sockd.log
+logoutput: syslog stdout /var/log/sockd.log
+logoutput: stderr
+
+# The server will only accept connections going to that address
+internal: {{ wireguard_dante_internal }} port = {{ wireguard_dante_port }}
+
+# All outgoing connections from the server will use the IP address
+# of that interface
+external: {{ wireguard_dante_external }}
+
+#
+# Authentication methods
+#
+
+# methods for client-rules.
+clientmethod: none
+
+# methods for socks-rules
+socksmethod: none
+
+#
+# User identities, an important section.
+#
+
+# when doing something that can require privilege, it will use the
+# userid:
+user.privileged: proxy
+
+# when running as usual, it will use the unprivileged userid of:
+user.unprivileged: nobody
+
+
+#
+# The actual rules.  There are two kinds and they work at different levels.
+#
+# The rules prefixed with "client" are checked first and say who is allowed
+# and who is not allowed to speak/connect to the server.  I.e the
+# ip range containing possibly valid clients.
+# It is especially important that these only use IP addresses, not hostnames,
+# for security reasons.
+#
+# The rules that do not have a "client" prefix are checked later, when the
+# client has sent its request and are used to evaluate the actual
+# request.
+#
+# The "to:" in the "client" context gives the address the connection
+# is accepted on, i.e the address the socks server is listening on, or
+# just "0.0.0.0/0" for any address the server is listening on.
+#
+# The "to:" in the non-"client" context gives the destination of the clients
+# socks request.
+#
+# "from:" is the source address in both contexts.
+#
+
+# Allow clients from WireGuard
+client pass {
+  from: {{ wireguard_dante_from }} to: 0.0.0.0/0
+  log: error # connect disconnect
+}
+
+# drop everyone else as soon as we can and log the connect, they are not
+# on our net and have no business connecting to us.
+client block {
+  from: 0.0.0.0/0 to: 0.0.0.0/0
+  log: error
+}
+
+# the rules controlling what clients are allowed what requests
+#
+
+# we don't want people connecting to loopback addresses,
+# who knows what could happen then.
+socks block {
+  from: 0.0.0.0/0 to: lo0
+  log: error
+}
+
+# generic pass statement for incoming connections/packets
+socks pass {
+  from: {{ wireguard_dante_from }} to: 0.0.0.0/0
+  log: error # connect disconnect
+}
+
+# last line, block everyone else.  This is the default but if you provide
+# one  yourself you can specify your own logging/actions
+socks block {
+  from: 0.0.0.0/0 to: 0.0.0.0/0
+  log: error
+}

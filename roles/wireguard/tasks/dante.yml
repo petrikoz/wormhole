@@ -1,0 +1,16 @@
+---
+- name: Install Dante
+  apt:
+    package: dante-server
+    update_cache: yes
+
+- name: Configure Dante
+  template:
+    src: danted.conf.j2
+    dest: /etc/danted.conf
+
+- name: Enable the Dante service
+  service:
+    enabled: yes
+    name: danted
+    state: restarted

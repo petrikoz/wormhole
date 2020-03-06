@@ -1,0 +1,15 @@
+[Interface]
+Address = {{ wireguard_ip_gateway }}/32
+ListenPort = {{ wireguard_port }}
+PrivateKey = {{ wireguard_server_key }}
+
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+
+{% for item in wireguard_clients|zip(wireguard_client_keys_pub.results)|list %}
+# "{{ item[0] }}" Client Peer
+[Peer]
+PublicKey = {{ item[1].stdout }}
+AllowedIPs = {{ wireguard_ip_base }}{{ loop.index + 1 }}/32
+
+{% endfor %}

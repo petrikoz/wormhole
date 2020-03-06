@@ -1,0 +1,29 @@
+---
+wireguard_clients:
+  - desktop
+  - phone
+
+wireguard_dante_port: '1080'
+wireguard_dante_internal: '{{ wireguard_ip_gateway }}'
+wireguard_dante_external: '{{ ansible_default_ipv4.interface }}'
+wireguard_dante_from: '{{ wireguard_ip_subnet }}'
+
+wireguard_dnsmasq_domain: '{{ common_hostname }}'
+wireguard_dnsmasq_ip: '{{ wireguard_ip_gateway }}'
+wireguard_dnsmasq_path_service: /etc/systemd/system/dnsmasq.service.d'
+
+# if you change this then change it in `roles/common/files/40-services`
+wireguard_interface: wg0
+
+wireguard_ip_base: '10.192.122.'
+wireguard_ip_gateway: '{{ wireguard_ip_base }}1'
+wireguard_ip_subnet: '{{ wireguard_ip_base }}0/28'
+
+wireguard_file_server_conf: '{{ wireguard_path }}/{{ wireguard_interface }}.conf'
+wireguard_file_server_key: '{{ wireguard_path }}/server.key'
+wireguard_file_server_key_pub: '{{ wireguard_path }}/server.pub'
+
+wireguard_path: /etc/wireguard
+wireguard_path_clients: '{{ wireguard_path }}/clients'
+
+wireguard_port: '51820'

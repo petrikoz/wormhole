@@ -1,0 +1,110 @@
+---
+- name: Determine the running kernel release
+  command: uname -r
+  register: kernel_release
+
+- name: Add the WireGuard PPA
+  apt_repository:
+    repo: 'ppa:wireguard/wireguard'
+  register: wireguard_apt_repository
+  until: not wireguard_apt_repository.failed
+
+- name: Install the WireGuard packages
+  apt:
+    package:
+      - linux-headers-{{ kernel_release.stdout }}
+      - linux-headers-generic
+      - wireguard-dkms
+      - wireguard-tools
+    update_cache: yes
+
+- name: Generate private and public key for the server
+  shell: 'umask 077; wg genkey | tee {{ wireguard_file_server_key }} | wg pubkey > {{ wireguard_file_server_key_pub }}'
+  args:
+    creates: '{{ wireguard_file_server_key_pub }}'
+
+- name: Register the server key file contents
+  command: cat {{ item }}
+  register: wireguard_files_server_key
+  changed_when: no
+  with_items:
+    - '{{ wireguard_file_server_key }}'
+    - '{{ wireguard_file_server_key_pub }}'
+
+- name: Set the server key material facts
+  set_fact:
+    wireguard_server_key: '{{ wireguard_files_server_key.results[0].stdout }}'
+    wireguard_server_key_pub:  '{{ wireguard_files_server_key.results[1].stdout }}'
+
+- name: Create clients directories
+  file:
+    path: '{{ wireguard_path_clients }}/{{ item }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0600
+  with_items: '{{ wireguard_clients }}'
+
+- name: Generate private and public key for each client
+  shell: 'umask 077; wg genkey | tee client.key | wg pubkey > client.pub'
+  args:
+    chdir: '{{ wireguard_path_clients }}/{{ item }}'
+    creates: 'client.key'
+  with_items: '{{ wireguard_clients }}'
+
+- name: Register clients private keys
+  command: 'cat client.key'
+  args:
+    chdir: '{{ wireguard_path_clients }}/{{ item }}'
+  with_items: '{{ wireguard_clients }}'
+  register: wireguard_client_keys
+  changed_when: no
+
+- name: Register clients public keys
+  command: 'cat client.pub'
+  args:
+    chdir: '{{ wireguard_path_clients }}/{{ item }}'
+  with_items: '{{ wireguard_clients }}'
+  register: wireguard_client_keys_pub
+  changed_when: no
+
+- name: Generate the client configuration profiles
+  template:
+    src: 'client.conf.j2'
+    dest: '{{ wireguard_path_clients }}/{{ item[0] }}/client.conf'
+  with_together:
+    - '{{ wireguard_clients }}'
+    - '{{ wireguard_client_keys.results }}'
+  loop_control:
+    index_var: item_idx
+
+- name: Generate the server configuration
+  template:
+    src: 'server.conf.j2'
+    dest: '{{ wireguard_file_server_conf }}'
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Enable reload-module-on-update to upgrade WireGuard without user confirmation
+  file:
+    path: '{{ wireguard_path }}/.reload-module-on-update'
+    state: touch
+
+- name: Enable the WireGuard service so it starts at boot, and bring up the WireGuard network interface
+  systemd:
+    name: wg-quick@{{ wireguard_interface }}.service
+    enabled: yes
+    state: started
+
+- import_tasks: dante.yml
+  tags: ['wireguard-dante']
+
+- import_tasks: dnsmasq.yml
+  tags: ['wireguard-dnsmasq']
+
+- import_tasks: firewall.yml
+  tags: ['wireguard-firewall']
+
+- import_tasks: docs.yml
+  tags: ['wireguard-docs']
