@@ -91,12 +91,6 @@
     path: '{{ wireguard_path }}/.reload-module-on-update'
     state: touch
 
-- name: Enable the WireGuard service so it starts at boot, and bring up the WireGuard network interface
-  systemd:
-    name: wg-quick@{{ wireguard_interface }}.service
-    enabled: yes
-    state: started
-
 - import_tasks: dante.yml
   tags: ['wireguard-dante']
 
@@ -108,3 +102,9 @@
 
 - import_tasks: docs.yml
   tags: ['wireguard-docs']
+
+- name: Enable the WireGuard service so it starts at boot, and bring up the WireGuard network interface
+  systemd:
+    name: wg-quick@{{ wireguard_interface }}.service
+    enabled: yes
+    state: started
