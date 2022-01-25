@@ -1,3 +1,9 @@
 #!/bin/bash
 
+# colors
+undim="\e[0m"
+yellow="\e[1;93m"
+
+printf "$yellow"
 /usr/bin/env figlet "$(hostname)"
+printf "$undim"

@@ -3,6 +3,7 @@
 # set column width
 COLUMNS=3
 # colors
+blue="\e[1;34m"
 green="\e[1;32m"
 red="\e[1;31m"
 undim="\e[0m"
@@ -33,5 +34,5 @@ for i in ${!services[@]}; do
 done
 out+="\n"
 
-printf "\nservices:\n"
+printf "\n${blue}SERVICES:${undim}\n"
 printf "$out" | column -ts $',' | sed -e 's/^/  /'
